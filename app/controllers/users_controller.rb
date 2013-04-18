@@ -4,6 +4,9 @@ class UsersController < ApplicationController
 	before_filter :admin_user,     only: :destroy
 	
   def new
+  	  if signed_in?
+  	  	 redirect_to root_path 
+  	  end
   	  @user=User.new
   end
   
@@ -12,9 +15,14 @@ class UsersController < ApplicationController
   end
   
   def destroy
-    User.find(params[:id]).destroy
-    flash[:success] = "User destroyed."
-    redirect_to users_url
+  	  deaduser= User.find(params[:id])
+  	  if deaduser.admin?
+  		flash[:error] = "Cannot destoy admin."	  	  
+  	  else
+  	  	  User.find(params[:id]).destroy
+  	  	  flash[:success] = "User destroyed."
+  	  end
+  	  redirect_to users_url
   end
   
   def index
@@ -22,14 +30,18 @@ class UsersController < ApplicationController
   end
   
   def create
-    @user = User.new(params[:user])
-    if @user.save
-    	sign_in @user
-    	flash[:success] = "Welcome to JJHu's App!"
-      redirect_to @user
-    else
-      render 'new'
-    end
+  	   if signed_in?
+  	  	 redirect_to root_path 
+  	  else
+  	  	  @user = User.new(params[:user])
+  	  	  if @user.save
+  	  	  	  sign_in @user
+  	  	  	  flash[:success] = "Welcome to JJHu's App!"
+  	  	  	  redirect_to @user
+  	  	  else
+  	  	  	  render 'new'
+  	  	  end
+  	  end
   end
   
   def edit
